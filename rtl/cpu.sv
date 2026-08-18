@@ -25,6 +25,9 @@ module cpu (
     logic [4:0]  id_rd;
     logic [3:0]  id_alu_op;
 
+    logic [4:0] id_rs1;
+    logic [4:0] id_rs2;
+
     // EX signals
     logic [31:0] ex_rs1_data;
     logic [31:0] ex_rs2_data;
@@ -72,6 +75,17 @@ module cpu (
         .alu_op(ex_alu_op), 
         .result(result), 
         .zero(zero)
+    );
+
+    decode decode_inst(
+        .instruction(id_instruction),
+        .rs1_data(id_rs1_data), 
+        .rs2_data(id_rs2_data), 
+        .rs1(id_rs1), 
+        .rs2(id_rs2), 
+        .rd(id_rd), 
+        .immediate(id_immediate), 
+        .alu_op(id_alu_op)
     );
 
 endmodule
