@@ -39,9 +39,15 @@ module cpu (
     // ALU signals 
     logic zero;
 
+    // regfile signals 
+    logic        wr_en;
+    logic [31:0] wr_data;
+
     // in a real CPU the pc is generated itself 
     // in this case we will hard code it as 0 first so we can test it for now. 
     assign if_pc = 32'b0;
+    assign wr_data = result;
+    assign wr_en = 1'b1; // always write to the reg file for now 
 
     if_id_reg if_id(
         .clk(clk), 
@@ -87,5 +93,18 @@ module cpu (
         .immediate(id_immediate), 
         .alu_op(id_alu_op)
     );
+
+    regfile regfile_inst(
+        .clk(clk), 
+        .rs1(id_rs1), 
+        .rs2(id_rs2), 
+        .rd(ex_rd), 
+        .wr_data(wr_data), 
+        .wr_en(wr_en), 
+        .rs1_data(id_rs1_data), 
+        .rs2_data(id_rs2_data)
+    );
+    // think of the reg file as HARDWARE, it is used in two places, the read and the write
+    // by the time that we are ready to write to the rd, we are on the ex stage. 
 
 endmodule
