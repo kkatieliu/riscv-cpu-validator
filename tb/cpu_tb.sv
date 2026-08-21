@@ -21,6 +21,14 @@ module cpu_tb;
         .result(result)
     );
 
+    // SVA concurrent assertion: valid SystemVerilog, requires Questa/VCS
+    // Icarus Verilog does not support concurrent assertions
+    // property no_x_after_reset;
+    //     @(posedge clk) ($fell(rst)) |-> ##3 !$isunknown(result);
+    // endproperty
+    // assert property (no_x_after_reset)
+    //     else $error("Result is X after reset was released!");
+
     initial begin
         // Initialize
         rst = 1;
@@ -46,7 +54,31 @@ module cpu_tb;
         @(posedge clk);
         @(posedge clk);
         
-        $display("Result = %0d", result);
+        $display("ADD result = %0d", result);
+        // first SVA assertsion, an immediate one to check if the value we got was expected 
+        assert (result == 32'd30)
+            else $error("FAIL: ADD x3,x1,x2 expected 30 got %0d", result);
+
+
+        // SUB x3, x1, x2  (10 - 20)
+        instruction = 32'b0100000_00010_00001_000_00011_0110011;
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+        $display("SUB result = %0d", $signed(result));
+        assert (result == -32'd10)
+            else $error("FAIL: SUB expected -10 got %0d", result);
+
+        instruction = 32'b0000000_00010_00001_111_00011_0110011; // AND x3, x1, x2
+        @(posedge clk);
+        @(posedge clk);
+        @(posedge clk);
+        $display("AND result = %0d", result);
+        assert(result == 32'd0)
+            else $error("FAIL: AND expected 0 got %0d", result);
+
+
+
         $finish;
     end
 endmodule
