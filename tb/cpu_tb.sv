@@ -29,6 +29,11 @@ module cpu_tb;
     // assert property (no_x_after_reset)
     //     else $error("Result is X after reset was released!");
 
+    // Storage for test vectors (will get filled after reading from the python script output)
+    logic [31:0] reg_init [31:0];
+    logic [31:0] test_instructions [19:0];
+    logic [31:0] test_expected [19:0];
+
     initial begin
         // Initialize
         rst = 1;
@@ -77,7 +82,47 @@ module cpu_tb;
         assert(result == 32'd0)
             else $error("FAIL: AND expected 0 got %0d", result);
 
+        // read the test vectors from the python script output files 
+        $readmemh("scripts/reg_init.txt", reg_init);
+        $readmemh("scripts/instructions.txt", test_instructions);
+        $readmemh("scripts/expected.txt", test_expected);
 
+       
+
+        // Reset
+        rst = 1;
+        instruction = 32'b0;
+        @(posedge clk);
+        @(posedge clk);
+        rst = 0;
+
+        // Initialize all registers from file
+        for (int i = 0; i < 32; i++) begin
+            dut.regfile_inst.registers[i] = reg_init[i];
+        end
+
+        for (int i = 0; i < 5; i++) begin
+            $display("reg[%0d] = %h", i, dut.regfile_inst.registers[i]);
+        end
+
+        // Run all the 20 tests
+        for (int i = 0; i < 20; i++) begin
+            instruction = test_instructions[i];
+            @(posedge clk);
+            @(posedge clk);
+            @(posedge clk);
+            @(posedge clk);
+            @(posedge clk);
+            
+            assert (result == test_expected[i])
+                else $error("Test %0d FAILED: got %h expected %h", i, result, test_expected[i]);
+            
+            $display("Test %0d: instruction=%h result=%h expected=%h %s",
+                i, test_instructions[i], result, test_expected[i],
+                (result == test_expected[i]) ? "PASS" : "FAIL");
+        end
+
+        $display("All tests completed.");
 
         $finish;
     end
