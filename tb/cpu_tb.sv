@@ -21,6 +21,8 @@ module cpu_tb;
         .result(result)
     );
 
+    
+
     // SVA concurrent assertion: valid SystemVerilog, requires Questa/VCS
     // Icarus Verilog does not support concurrent assertions
     // property no_x_after_reset;
@@ -33,6 +35,8 @@ module cpu_tb;
     logic [31:0] reg_init [31:0];
     logic [31:0] test_instructions [19:0];
     logic [31:0] test_expected [19:0];
+
+    
 
     initial begin
         // Initialize

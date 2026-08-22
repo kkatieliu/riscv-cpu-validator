@@ -43,11 +43,16 @@ module cpu (
     logic        wr_en;
     logic [31:0] wr_data;
 
+    // MEM/WB signals
+    logic [31:0] mem_result;
+    logic [4:0]  mem_rd;
+
     // in a real CPU the pc is generated itself 
     // in this case we will hard code it as 0 first so we can test it for now. 
     assign if_pc = 32'b0;
-    assign wr_data = result;
-    assign wr_en = 1'b1; // always write to the reg file for now 
+
+    assign wr_data = mem_result;
+    assign wr_en   = 1'b1;
 
     if_id_reg if_id(
         .clk(clk), 
@@ -98,7 +103,7 @@ module cpu (
         .clk(clk), 
         .rs1(id_rs1), 
         .rs2(id_rs2), 
-        .rd(ex_rd), 
+        .rd(mem_rd), 
         .wr_data(wr_data), 
         .wr_en(wr_en), 
         .rs1_data(id_rs1_data), 
@@ -106,5 +111,16 @@ module cpu (
     );
     // think of the reg file as HARDWARE, it is used in two places, the read and the write
     // by the time that we are ready to write to the rd, we are on the ex stage. 
+
+    ex_mem_reg ex_mem(
+        .clk(clk),
+        .rst(rst),
+        .ex_result(result),
+        .ex_rd(ex_rd),
+        .mem_result(mem_result),
+        .mem_rd(mem_rd)
+    );
+    
+   
 
 endmodule

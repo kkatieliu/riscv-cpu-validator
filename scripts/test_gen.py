@@ -45,6 +45,8 @@ def main():
     # Initialize some registers with random values
     for i in range(1, 32):
         reg_vals[i] = random.randint(0, 0xFFFFFFFF)
+        
+    initial_reg_vals = reg_vals.copy()
     
     tests = []
     for _ in range(NUM_TESTS):
@@ -54,11 +56,13 @@ def main():
             rs1, rs2, reg_vals[rs1], reg_vals[rs2]
         )
         tests.append((instr, expected, rs1_idx, rs2_idx, rd))
+        reg_vals[rd] = expected
     
     # Write to file ( but need to write to three seperate files since sv readmemh can only read one format at a time)
+    # write the inital values of the registers to a file before they get changed my rd 
     with open("scripts/reg_init.txt", "w") as f:
         for i in range(32):
-            f.write(f"{reg_vals[i]:08x}\n")
+            f.write(f"{initial_reg_vals[i]:08x}\n")
     
     with open("scripts/instructions.txt", "w") as f:
         for instr, expected, rs1, rs2, rd in tests:
@@ -69,6 +73,8 @@ def main():
             f.write(f"{expected:08x}\n")
     
     print(f"Generated {NUM_TESTS} test vectors and put into scripts/test_vectors.txt")
+    print(f"Initial reg[9] = {initial_reg_vals[9]:08x}")
+    print(f"After test 0, reg[9] should be = {tests[0][1]:08x}")
 
 if __name__ == "__main__":
     main()

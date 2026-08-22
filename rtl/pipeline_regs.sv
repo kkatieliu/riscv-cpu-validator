@@ -61,4 +61,24 @@ always_ff @(posedge clk) begin
     end 
 end 
 
+
 endmodule 
+
+module ex_mem_reg (
+    input  logic        clk,
+    input  logic        rst,
+    input  logic [31:0] ex_result,
+    input  logic [4:0]  ex_rd,
+    output logic [31:0] mem_result,
+    output logic [4:0]  mem_rd
+);
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            mem_result <= 32'b0;
+            mem_rd     <= 5'b0;
+        end else begin
+            mem_result <= ex_result;
+            mem_rd     <= ex_rd;
+        end
+    end
+endmodule
