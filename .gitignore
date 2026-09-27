@@ -1,3 +1,16 @@
 alu_tb
 *.vcd
 *.fst
+
+# Compiled simulation binaries
+cpu_tb
+cpu_sim
+alu_tb
+
+# Mac junk
+.DS_Store
+
+# Waveform dumps
+*.vcd
+*.fst
+*.vvp
