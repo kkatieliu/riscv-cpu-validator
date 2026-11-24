@@ -163,6 +163,7 @@ def generate_sra(rs1, rs2, rs1_val, rs2_val):
 
 def main():
     # Random register values: these will be loaded into the register file
+    random.seed(10) 
     reg_vals = [0] * 32  # all registers start at 0
     reg_vals[0] = 0      # x0 is always 0
     

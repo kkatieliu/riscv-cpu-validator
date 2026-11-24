@@ -112,18 +112,18 @@ module cpu_tb;
         // Run all the 20 tests
         for (int i = 0; i < 20; i++) begin
             instruction = test_instructions[i];
-            @(posedge clk);
-            @(posedge clk);
-            @(posedge clk);
-            @(posedge clk);
-            @(posedge clk);
-            
+            @(posedge clk);          // IF/ID captures the instruction
+            #1 instruction = 32'b0;  // bubble: it can't execute again
+            @(posedge clk);          // ID/EX captures it
+            #1;                      // ALU output is now valid for this instruction
+
             assert (result == test_expected[i])
                 else $error("Test %0d FAILED: got %h expected %h", i, result, test_expected[i]);
-            
             $display("Test %0d: instruction=%h result=%h expected=%h %s",
                 i, test_instructions[i], result, test_expected[i],
                 (result == test_expected[i]) ? "PASS" : "FAIL");
+
+            repeat (3) @(posedge clk);  // let the write land before the next test
         end
 
         $display("All tests completed.");
