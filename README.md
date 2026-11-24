@@ -135,15 +135,24 @@ register values, producing false failures on all 20 random tests.
 *Fix:* Snapshot register state with `reg_vals.copy()` before
 generating any tests.
 
-**Bug 2 — Pipeline Writeback Timing**
-The ALU result was connected combinationally to the register
-file write port. Subsequent instructions reading the same
-register saw stale values because the writeback hadn't been
-clocked in yet.
+**Bug 2: Testbench executed each instruction multiple times**
+Random tests failed intermittently (on some seeds, not others). The
+testbench held each instruction on the CPU input for several cycles
+with `wr_en` always high, so every instruction executed 3-4 times in
+a row, while the Python reference model assumed it executed once.
+Whenever an instruction's `rd` matched one of its own source registers
+(e.g. `SLL x1, x28, x1`), each repeat re-read the previous repeat's
+result, and later tests inherited the corrupted register values.
 
-*Fix:* Added `ex_mem_reg` pipeline register to properly
-clock the ALU result before writeback, resolving the
-data hazard.
+*How it was isolated:* Swept 10 fixed seeds and ran the same vectors
+on two RTL versions (with and without the extra `ex_mem_reg` stage).
+Both failed identically, which ruled out the RTL. The failing
+instructions were the self-dependent ones (and tests that read their
+destinations later), which pointed to the stimulus.
+
+*Fix:* The testbench now issues each instruction for one cycle,
+followed by a NOP bubble (instruction 0, which only writes x0 and is
+ignored). All 10 seeds pass on both RTL versions.
 
 ---
 
